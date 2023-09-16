@@ -22,6 +22,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/clickhouse"
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/hash"
 	_ "github.com/influxdata/flux/stdlib/contrib/qxip/logql"
+	_ "github.com/influxdata/flux/stdlib/contrib/qxip/iox"
 	_ "github.com/influxdata/flux/stdlib/contrib/rhajek/bigpanda"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/opsgenie"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/sensu"
