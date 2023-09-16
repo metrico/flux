@@ -6,6 +6,7 @@
 //
 package iox
 
+
 import "sql"
 import "date"
 import "strings"
@@ -37,6 +38,10 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 // - host: URL of the IOx instance to query.
 // - org: Organization name.
 // - token: [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
+// - table: Table used in the FlightSQL query.
+// - limit: Limit for the FlightSQL query. Default is `1000`.
+// - columns: Columns selected by the FlightSQL query. Default is `*`.
+// - secure: Use secure connection for FlightSQL query. Default is `true`.
 //
 // ## Examples
 //
@@ -68,52 +73,50 @@ builtin _mask : (<-tables: stream[A], columns: [string]) => stream[B] where A: R
 //
 // ## Metadata
 // tags: inputs
-from = (
-        bucket,
-        start=-1h,
-        stop=now(),
-        org="",
-        host="",
-        token="",
-        table="",
-        columns="*",
-        limit="1000",
-    ) =>
-    {
-         https = uint(v: strings.countStr(v: host, substr: "https"))
-         secure =
-           if https >= 1 then
-             "true"
-           else
-             "false"
+from =
+    (
+            bucket,
+            start=-1h,
+            stop=now(),
+            org="",
+            host="",
+            token="",
+            table="",
+            columns="*",
+            limit="1000",
+            secure="true",
+        ) =>
+        {
 
-         dataSourceName =
-            if org != "" and host != "" and token != "" then
-                "iox://${host}/${bucket}?secure=${secure}&token=${token}"
-            else if org != "" and token != "" then
-                "iox://${host}/${org}_${bucket}?secure=${secure}&token=${token}"
-            else if org != "" and host != "" then
-                "iox://${host}/${org}_${bucket}?secure=${secure}"
-            else if host != "" and token != "" then
-                "iox://${host}/${bucket}?secure=${secure}&token=${token}"
-            else if org != "" then
-                "iox://${host}/${org}_${bucket}?secure=${secure}"
-            else if host != "" then
-                "iox://${host}/${bucket}?secure=${secure}&token=${token}"
-            else
-                "iox://${host}/${bucket}?secure=${secure}"
+            dataSourceName =
+                if org != "" and host != "" and token != "" then
+                    "iox://${host}/${bucket}?secure=${secure}&token=${token}"
+                else if org != "" and token != "" then
+                    "iox://${host}/${org}_${bucket}?secure=${secure}&token=${token}"
+                else if org != "" and host != "" then
+                    "iox://${host}/${org}_${bucket}?secure=${secure}"
+                else if host != "" and token != "" then
+                    "iox://${host}/${bucket}?secure=${secure}&token=${token}"
+                else if org != "" then
+                    "iox://${host}/${org}_${bucket}?secure=${secure}"
+                else if host != "" then
+                    "iox://${host}/${bucket}?secure=${secure}&token=${token}"
+                else
+                    "iox://${host}/${bucket}?secure=${secure}"
 
-         qStart = date.time(t: start)
-         qStop = date.time(t: stop)
-         query = "SELECT ${columns} FROM ${table} WHERE ( time >= '${qStart}' AND  time <= '${qStop}') LIMIT ${limit}"
+            qStart = date.time(t: start)
+            qStop = date.time(t: stop)
+            query =
+                "SELECT ${columns} FROM ${table} WHERE ( time >= '${qStart}' AND  time <= '${qStop}') LIMIT ${limit}"
 
-         source = sql.from(
-                          driverName: "influxdb-iox",
-                          dataSourceName: "${dataSourceName}",
-                          query: "${query}",
-         )
+            source =
+                sql.from(
+                    driverName: "influxdb-iox",
+                    dataSourceName: "${dataSourceName}",
+                    query: "${query}",
+                )
 
-         return source |> rename(columns: {time: "_time"})
-    }
+            return source |> rename(columns: {time: "_time"})
+        }
 
 _from = from
