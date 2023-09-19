@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/InfluxCommunity/flux"
 	"github.com/InfluxCommunity/flux/codes"
 	"github.com/InfluxCommunity/flux/execute"

@@ -181,7 +181,7 @@ func ioxOpenFunction(driverName, datasourceName string) func() (*sql.DB, error) 
 		creds := &perRpcCredentials{db: url.Path[1:]}
 
 		cfg := influxdbiox.ClientConfig{
-			Address:     fmt.Sprintf("%s:%s", url.Hostname(), url.Port()),
+			Address:     fmt.Sprintf(url.Host),
 			Namespace:   url.Path[1:],
 			DialOptions: []grpc.DialOption{grpc.WithPerRPCCredentials(creds)},
 		}
